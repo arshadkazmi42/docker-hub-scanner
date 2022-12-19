@@ -56,7 +56,7 @@ class Run
           for layer_data in layer["layers"]
             
             File.write("#{@query}.txt", layer_data["instruction"], mode: "a")
-          end layer.has_key?("layers")
+          end if layer.has_key?("layers")
         end
 
       end
@@ -144,7 +144,15 @@ class Api
     request = Net::HTTP::Get.new(uri)
     response = https.request(request)
 
+    throttle(response.each_header.to_h)
+
     JSON.parse(response.body)
+  end
+
+  def throttle(headers)
+    rate_remaining = headers["x-ratelimit-remaining"]
+
+    sleep rand(30...60) if rate_remaining % 30 === 0
   end
 end
 
