@@ -152,7 +152,12 @@ class Api
   def throttle(headers)
     rate_remaining = headers["x-ratelimit-remaining"]
 
-    sleep rand(30...60) if rate_remaining % 30 === 0
+    if rate_remaining % 30 === 0
+      seconds = rand(30...60)
+      puts "Throttling for #{seconds} seconds"
+      sleep rand(seconds)
+    end 
+
   end
 end
 
