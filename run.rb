@@ -55,7 +55,7 @@ class Run
           
           for layer_data in layer["layers"]
             
-            File.write("#{@query}.txt", layer_data["instruction"], mode: "a")
+            File.write("#{@query}.txt", "#{layer_data["instruction"]}\n", mode: "a")
           end if layer.has_key?("layers")
         end
 
