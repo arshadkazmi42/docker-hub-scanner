@@ -59,7 +59,7 @@ class Run
           end if layer.has_key?("layers")
         end
 
-      end
+      end if tags.has_key?("results")
     end
   end 
 end
