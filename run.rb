@@ -68,7 +68,7 @@ class Run
   end
 
   def is_valid_layers(layers)
-    layers.is_a?(Hash) && layers.has_key?("results")
+    layers.is_a?(Hash) && layers.has_key?("layers")
   end
 end
 
