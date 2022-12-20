@@ -56,12 +56,20 @@ class Run
           for layer_data in layer["layers"]
             
             File.write("#{@query}.txt", "#{layer_data["instruction"]}\n", mode: "a")
-          end if layer.has_key?("layers")
+          end if is_valid_layers(layer)
         end
 
-      end if tags.has_key?("results")
+      end if is_valid_tags(tags)
     end
-  end 
+  end
+  
+  def is_valid_tags(tags)
+    tags.is_a?(Hash) && tags.has_key?("results")
+  end
+
+  def is_valid_layers(layers)
+    layers.is_a?(Hash) && layers.has_key?("results")
+  end
 end
 
 
