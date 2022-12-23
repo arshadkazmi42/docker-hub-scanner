@@ -51,6 +51,9 @@ class Run
         tag_name = tag["name"]
         layers = docker_layers.get(repo_name, tag_name)
 
+        docker_repo = "\n-------------\nDocker Repo: #{repo_name} - #{tag_name}\n-------------\n"
+        File.write("#{@query}.txt", "#{docker_repo}", mode: "a")
+
         for layer in layers
           
           for layer_data in layer["layers"]
