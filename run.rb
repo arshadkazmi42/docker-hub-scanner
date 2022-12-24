@@ -72,6 +72,8 @@ class Run
           end
 
         end if is_valid_tags(tags)
+
+        tag_page = tag_page + 1 
       end
     end
   end
