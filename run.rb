@@ -44,25 +44,35 @@ class Run
     for repo in @repositories
 
       repo_name = repo["repo_name"]
-      tags = docker_tags.get(repo_name)
 
-      for tag in tags["results"]
+    
+      tags_count = docker_tags.get_count(repo_name)
 
-        tag_name = tag["name"]
-        layers = docker_layers.get(repo_name, tag_name)
+      tag_pages = 1
+      tag_pages = (tags_count / 100) + 1 if tags_count > 0
 
-        docker_repo = "\n-------------\nDocker Repo: #{repo_name} - #{tag_name}\n-------------\n"
-        File.write("#{@query}.txt", "#{docker_repo}", mode: "a")
+      tag_page=1
+      while tag_page <= tag_pages
+        tags = docker_tags.get(repo_name, tag_page)
 
-        for layer in layers
-          
-          for layer_data in layer["layers"]
+        for tag in tags["results"]
+
+          tag_name = tag["name"]
+          layers = docker_layers.get(repo_name, tag_name)
+
+          docker_repo = "\n-------------\nDocker Repo: #{repo_name} - #{tag_name}\n-------------\n"
+          File.write("#{@query}.txt", "#{docker_repo}", mode: "a")
+
+          for layer in layers
             
-            File.write("#{@query}.txt", "#{layer_data["instruction"]}\n", mode: "a")
-          end if is_valid_layers(layer)
-        end
+            for layer_data in layer["layers"]
+              
+              File.write("#{@query}.txt", "#{layer_data["instruction"]}\n", mode: "a")
+            end if is_valid_layers(layer)
+          end
 
-      end if is_valid_tags(tags)
+        end if is_valid_tags(tags)
+      end
     end
   end
   
@@ -109,11 +119,15 @@ class DockerTags
     @api = Api.new
   end
 
-  def get(repo)
-    call_api(repo)
+  def get_count(repo, page=1)
+    call_api(repo, page)["count"]
   end
 
-  def call_api(repo, page=1)
+  def get(repo, page=1)
+    call_api(repo, page)
+  end
+
+  def call_api(repo, page)
     @api.call("https://hub.docker.com/v2/repositories/#{repo}/tags", {
       :page => page,
       :page_size => 100,
