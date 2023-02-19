@@ -57,6 +57,8 @@ class Run
 
         for tag in tags["results"]
 
+          process_user(tag)
+
           tag_name = tag["name"]
           layers = docker_layers.get(repo_name, tag_name)
 
@@ -78,6 +80,11 @@ class Run
     end
   end
   
+  def process_user(tag)
+    puts tag["last_updater_username"]
+    File.write("#{@query}_users.txt", "#{tag["last_updater_username"]}\n", mode: "a")
+  end
+
   def is_valid_tags(tags)
     tags.is_a?(Hash) && tags.has_key?("results")
   end
