@@ -4,10 +4,11 @@ require 'json'
 
 class Run
 
-  def initialize(query)
+  def initialize(query, flags=nil)
     raise "Required parameter query" unless query
 
     @query = query
+    @flags = Flags.new(flags)
     @repositories = []
     @tags = []
 
@@ -16,7 +17,8 @@ class Run
 
   def start
     process_repositories
-    process_tags
+    process_tags unless @flags.only_tags?
+    process_only_tags if @flags.only_tags?
   end
 
   def process_repositories
@@ -79,6 +81,39 @@ class Run
       end
     end
   end
+
+  def process_only_tags
+    docker_tags = DockerTags.new
+    docker_layers = DockerLayers.new
+
+    for repo in @repositories
+
+      repo_name = repo["repo_name"]
+
+    
+      tags_count = docker_tags.get_count(repo_name)
+
+      tag_pages = 1
+      tag_pages = (tags_count / 100) + 1 if tags_count > 0
+
+      tag_page=1
+      while tag_page <= tag_pages
+        tags = docker_tags.get(repo_name, tag_page)
+
+        for tag in tags["results"]
+
+          tag_name = tag["name"]
+
+          docker_repo = "\n#{repo_name}:#{tag_name}\n"
+          File.write("#{@query}.txt", "#{docker_repo}", mode: "a")
+
+        end if is_valid_tags(tags)
+
+        tag_page = tag_page + 1 
+      end
+    end
+  end
+ 
   
   def process_user(tag)
     puts tag["last_updater_username"]
@@ -164,6 +199,15 @@ class DockerLayers
 
 end
 
+class Flags
+  def initialize(flags)
+    @flags = flags
+  end
+
+  def only_tags?
+    @flags == "--only-tags"
+  end
+end
 
 class Api
   def call(url, params)
@@ -196,4 +240,4 @@ class Api
 end
 
 
-Run.new(ARGV[0])
+Run.new(ARGV[0], ARGV[1])
