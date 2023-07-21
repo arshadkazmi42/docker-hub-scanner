@@ -48,11 +48,12 @@ class Run
 
       tag_page = 1
       tag_pages = 1
+      tags_found = 0
       tag_pages = (tags_count / 100) + 1 if tags_count > 0
 
       while tag_page <= tag_pages
+        break if tags_found > 1 # Process only first two tags
         tags = docker_tags.get(repo_name, tag_page)
-        tags_found = 0
         for tag in tags["results"]
           break if tags_found > 1 # Process only first two tags
           tag_name = tag["name"]
