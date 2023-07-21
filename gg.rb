@@ -52,10 +52,14 @@ class Run
 
       while tag_page <= tag_pages
         tags = docker_tags.get(repo_name, tag_page)
+        tags_found = 0
         for tag in tags["results"]
+          break if tags_found > 1 # Process only first two tags
           tag_name = tag["name"]
+          tag_size = tag["full_size"]/(1000 * 1000 * 1000) # Convert the size to GB
           docker_repo = "#{repo_name}:#{tag_name}\n"
-          File.write("#{@query}.txt", "#{docker_repo}", mode: "a")
+          File.write("#{@query}.txt", "#{docker_repo}", mode: "a") unless tag_size > 1 # Use tag only if size less than or equal to 1 gb
+          tags_found = tags_found + 1
         end if is_valid_tags(tags)
 
         tag_page = tag_page + 1 

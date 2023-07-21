@@ -2,8 +2,6 @@ ruby gg.rb $1
 
 mkdir $1
 
-ls
-
 cat $1.txt | sort | uniq | xargs -I {} sh ggshield.sh $1 {}
 
 cat $1-gg.txt  | grep -v "Pull\|Waiting\|Verifying\|Download\|Digest\|Already" > $1-clean.txt
