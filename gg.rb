@@ -51,7 +51,6 @@ class Run
       break unless is_valid_tags(tags)
 
       tag = tags["results"][0]
-      print tag
       tag_name = tag["name"]
       tag_size = tag["full_size"]/(1000 * 1000 * 1000) # Convert the size to GB
       docker_repo = "#{repo_name}:#{tag_name}\n"
