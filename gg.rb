@@ -10,6 +10,7 @@ class Run
     @query = query
     @repositories = []
     @tags = []
+    @max_tags = 1
 
     start
   end
@@ -38,44 +39,28 @@ class Run
   end
 
   def process_tags
-    MAX_TAGS = 1
-
     docker_tags = DockerTags.new
 
     for repo in @repositories
 
       repo_name = "#{repo["namespace"]}/#{repo["name"]}"
     
-      tags_count = docker_tags.get_count(repo_name)
-
       tag_page = 1
-      tag_pages = 1
-      tags_found = 0
-      tag_pages = (tags_count / 100) + 1 if tags_count > 0
 
-      while tag_page <= tag_pages
-        break if tags_found >= MAX_TAGS  # Process only first two tags
-        tags = docker_tags.get(repo_name, tag_page)
-        for tag in tags["results"]
-          break if tags_found >= MAX_TAGS # Process only first two tags
-          tag_name = tag["name"]
-          tag_size = tag["full_size"]/(1000 * 1000 * 1000) # Convert the size to GB
-          docker_repo = "#{repo_name}:#{tag_name}\n"
-          File.write("#{@query}.txt", "#{docker_repo}", mode: "a") unless tag_size > 1 # Use tag only if size less than or equal to 1 gb
-          tags_found = tags_found + 1
-        end if is_valid_tags(tags)
+      tags = docker_tags.get(repo_name, tag_page)
+      break unless is_valid_tags(tags)
 
-        tag_page = tag_page + 1 
-      end
+      tag = tags["results"][0]
+      print tag
+      tag_name = tag["name"]
+      tag_size = tag["full_size"]/(1000 * 1000 * 1000) # Convert the size to GB
+      docker_repo = "#{repo_name}:#{tag_name}\n"
+      File.write("#{@query}.txt", "#{docker_repo}", mode: "a") unless tag_size > 1 # Use tag only if size less than or equal to 1 gb
     end
   end
   
   def is_valid_tags(tags)
-    tags.is_a?(Hash) && tags.has_key?("results")
-  end
-
-  def is_valid_layers(layers)
-    layers.is_a?(Hash) && layers.has_key?("layers")
+    tags.is_a?(Hash) && tags.has_key?("results") && tags["results"].length > 0
   end
 end
 
