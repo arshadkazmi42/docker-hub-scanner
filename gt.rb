@@ -10,6 +10,7 @@ class Run
     @query = query
     @repositories = []
     @tags = []
+    @max_tags = 10
 
     start
   end
@@ -38,8 +39,6 @@ class Run
   end
 
   def process_tags
-    MAX_TAGS = 10
-
     docker_tags = DockerTags.new
 
     for repo in @repositories
@@ -54,10 +53,10 @@ class Run
       tag_pages = (tags_count / 100) + 1 if tags_count > 0
 
       while tag_page <= tag_pages
-        break if tags_found >= MAX_TAGS  # Process only first two tags
+        break if tags_found >= @max_tags  # Process only first max tags
         tags = docker_tags.get(repo_name, tag_page)
         for tag in tags["results"]
-          break if tags_found >= MAX_TAGS # Process only first two tags
+          break if tags_found >= @max_tags # Process only first max tags
           tag_name = tag["name"]
           tag_size = tag["full_size"]/(1000 * 1000 * 1000) # Convert the size to GB
           docker_repo = "#{repo_name}:#{tag_name}\n"
